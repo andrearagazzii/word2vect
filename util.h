@@ -3,9 +3,11 @@
 #include <math.h>
 #include <string.h>
 
-#define MAX_WORD_SIZE 20
-#define MAX_WORD_NUMBER 100
+#define MAX_WORD_SIZE 30
+#define MAX_WORD_NUMBER 200
 #define MAX_SENTENCE_NUMBER 10 
+#define DATA_FILE_PATH "data.txt"
+#define VOC_FILE_PATH "voc.txt"
 
 typedef struct {
 	char word[MAX_WORD_SIZE];
@@ -17,12 +19,11 @@ typedef struct {
 	VocItem voc[MAX_WORD_NUMBER];
 } Vocabulary;
 
-void createVocabulary(char file_path[], Vocabulary *v);  
-int tokenize(char tokens[][MAX_WORD_SIZE], char str[]); // split into words str
-VocItem *encode(Vocabulary *v, char word[]);
-void softmax(float input[], float output[], int dim);
-float random_float(); // random float range [-1, 1]
-float distance(float vectA[], float vectB[], int dim); // distance between two vectors
+typedef struct {
+	int dim;
+	char words[MAX_WORD_NUMBER][MAX_WORD_SIZE];
+} Sentence;
+
 
 void createVocabulary(char file_path[], Vocabulary *v) {
 	FILE *fp = fopen(file_path, "r");
@@ -103,4 +104,54 @@ float distance(float vectA[], float vectB[], int dim) {
 	}
 
 	return sqrt(sum);
+}
+
+void remove_newline_ch(char *line) {
+	int new_line = strlen(line) - 1;
+	if (line[new_line] == '\n')
+		line[new_line] = '\0';
+}
+
+
+void create_data(Sentence data[MAX_SENTENCE_NUMBER]) {
+	FILE *fp = fopen("data.txt", "r");
+
+	int sentence_count;
+	fscanf(fp, "%d\n", &sentence_count);
+	
+	char curr_sent[MAX_WORD_NUMBER * MAX_WORD_SIZE];
+	for (int i = 0; i < sentence_count; i++) {
+		/* fscanf(fp, "%s\n", curr_sent); */
+		fgets(curr_sent, sizeof(curr_sent), fp);
+		data[i].dim = tokenize(data[i].words, curr_sent);
+		remove_newline_ch(data[i].words[data[i].dim - 1]);
+	}
+	fclose(fp);
+	
+	// create the voc file
+	fp = fopen("voc.txt", "w");
+
+	char unique_words[MAX_WORD_NUMBER][MAX_WORD_SIZE];
+	int unique_words_count = 0;
+
+	for (int i = 0; i < sentence_count; i++) {
+		for (int j = 0; j < data[i].dim; j++) {
+			int add = 1;
+			for (int k = 0; k < unique_words_count; k++) {
+				if (strcmp(data[i].words[j], unique_words[k]) == 0) {
+					add = 0;
+				}
+			}
+			if (add) {
+				strcpy(unique_words[unique_words_count], data[i].words[j]);
+				unique_words_count++;
+			}
+		}
+	}
+
+	fprintf(fp, "%d\n", unique_words_count);
+
+	for (int i = 0; i < unique_words_count; i++) {
+		fprintf(fp, "%s\n", unique_words[i]);
+	}
 }

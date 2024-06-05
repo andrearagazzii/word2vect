@@ -1,5 +1,7 @@
-4
+6
 he is a king
 she is a queen
 he is a man
 she is a woman
+paris is the capital of france
+rome is the capital of italy

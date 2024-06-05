@@ -4,76 +4,41 @@
 #include <math.h>
 
 #include "util.h"
-
-// TODO: function to feed data
-
-#define MAX_WORD_SIZE 20
-#define MAX_WORD_NUMBER 100
+/* #include "read_data.h" */
 
 #define WINDOW 4
 #define HIDDEN_LAYER_SIZE 5
 #define EPOCHS 100
 #define LEARNING_RATE 0.1
 
-
-
 int main() {
 	Vocabulary v;
+	createVocabulary(VOC_FILE_PATH, &v);
 
 	// create the vocabulary
-	createVocabulary("voc.txt", &v);
+	Sentence data[MAX_SENTENCE_NUMBER];
+	create_data(data);
 
-	char str1[] = "he is a king";
-	char str2[] = "she is a queen";
-	char str3[] = "he is a man";
-	char str4[] = "she is a woman";
-
+	// create training samples
+	int sample_size = 0;
 	char train_data[50][2][MAX_WORD_SIZE];
 
-	char tokens[MAX_WORD_NUMBER][MAX_WORD_SIZE];
-	int token_count;
-	int sample_size = 0;
+	FILE *fp = fopen(DATA_FILE_PATH, "r");
+	int sentence_count;
+	fscanf(fp, "%d\n", &sentence_count);
 
-	// create training data
-	token_count = tokenize(tokens, str1);
-	for (int i = 0; i < token_count - 1; i++) {
-		for (int j = i+1; j < token_count && j < i + 1 + WINDOW; j++) {
-			strcpy(train_data[sample_size][0], tokens[i]);
-			strcpy(train_data[sample_size][1], tokens[j]);
-			sample_size++;
-		}
-	}
-
-	token_count = tokenize(tokens, str2);
-	for (int i = 0; i < token_count - 1; i++) {
-		for (int j = i+1; j < token_count && j < i + 1 + WINDOW; j++) {
-			strcpy(train_data[sample_size][0], tokens[i]);
-			strcpy(train_data[sample_size][1], tokens[j]);
-			sample_size++;
-		}
-	}
-	
-	token_count = tokenize(tokens, str3);
-	for (int i = 0; i < token_count - 1; i++) {
-		for (int j = i+1; j < token_count && j < i + 1 + WINDOW; j++) {
-			strcpy(train_data[sample_size][0], tokens[i]);
-			strcpy(train_data[sample_size][1], tokens[j]);
-			sample_size++;
-		}
-	}
-	
-	token_count = tokenize(tokens, str4);
-	for (int i = 0; i < token_count - 1; i++) {
-		for (int j = i+1; j < token_count && j < i + 1 + WINDOW; j++) {
-			strcpy(train_data[sample_size][0], tokens[i]);
-			strcpy(train_data[sample_size][1], tokens[j]);
-			sample_size++;
+	for (int i = 0; i < sentence_count; i++) {
+		for (int j = 0; j < data[i].dim; j++) {
+			for (int k = j+1; k < data[i].dim && k < j + 1 + WINDOW; k++) {
+				strcpy(train_data[sample_size][0], data[i].words[j]);
+				strcpy(train_data[sample_size][1], data[i].words[k]);
+				sample_size++;
+			}
 		}
 	}
 
 
 	// create the nn for embeddings
-	
 	float w_h[v.dim][HIDDEN_LAYER_SIZE];
 	float b_h[HIDDEN_LAYER_SIZE];
 	float z_h[HIDDEN_LAYER_SIZE];
@@ -169,6 +134,9 @@ int main() {
 	}
 
 	// the weights of the hidden layer are the embeddings for the words
+	// example
+	printf("rome-italy: %f\n", distance(w_h[13], w_h[14], HIDDEN_LAYER_SIZE));
+	printf("rome-france: %f\n", distance(w_h[13], w_h[12], HIDDEN_LAYER_SIZE));
 
 }
 
