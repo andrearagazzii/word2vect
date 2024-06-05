@@ -1,4 +1,4 @@
-15
+8
 he
 is
 a
@@ -7,10 +7,3 @@ she
 queen
 man
 woman
-warsaw
-poland
-capital
-berlin
-germany
-paris
-france
