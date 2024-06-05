@@ -24,7 +24,6 @@ typedef struct {
 	char words[MAX_WORD_NUMBER][MAX_WORD_SIZE];
 } Sentence;
 
-
 void createVocabulary(char file_path[], Vocabulary *v) {
 	FILE *fp = fopen(file_path, "r");
 	fscanf(fp, "%d\n", &(v->dim));
